@@ -9,9 +9,7 @@
 
 > [!IMPORTANT]
 > NEED 2 CLIENT (author, normal) AND 1 API SERVER
->
->
->
+
 > [!NOTE]
 > USE POSTMAN FOR API TEST
 
