@@ -21,12 +21,50 @@
 | POST   | /auth/signup                                     |
 | GET    | /users                                           |
 | GET    | /users/:userId                                   |
-| GET    | /users/:userId/posts                             |
 | GET    | /users/:userId/posts/:postId                     |
+| GET    | /users/:userId/posts                             |
 | GET    | /users/:userId/comments/                         |
-| GET    | /users/:userId/comments/:commentId               |
 | GET    | /users/:userId/posts/:postId/comments            |
+| POST   | /users/:userId                                   |
+| PUT    | /users/:userId                                   |
+| DELETE | /users/:userId                                   |
+| POST   | /users/:userId/posts/:postId                     |
+| PUT    | /users/:userId/posts/:postId                     |
+| DELETE | /users/:userId/posts/:postId                     |
+| GET    | /users/:userId/comments/:commentId               |
+| DELETE | /users/:userId/comments/:commentId               |
+| POST   | /users/:userId/comments/:commentId               |
+| PUT    | /users/:userId/comments/:commentId               |
 | GET    | /users/:userId/posts/:postId/comments/:commentId |
+| DELETE | /users/:userId/posts/:postId/comments/:commentId |
+| POST   | /users/:userId/posts/:postId/comments/:commentId |
+| PUT    | /users/:userId/posts/:postId/comments/:commentId |
+
+> [!IMPORTANT]
+> Provide query params for pagination, sort, filter
+* /users?limit=10&offset=0&sort=desc&username=Smith
+* /posts?limit=10&offset=0&sort=desc&isPublished=true&author=1
+* /comments?limit=10&offset=0&sort=desc
+
+
+> [!IMPORTANT]
+> Handle errors with proper status codes 
+* 400 - Bad Request
+* 401 - Unauthorized
+* 403 - Forbidden
+* 404 - Not Found
+* 500 - Internal Server Error
+* 502 - Bad Gateway
+* 503 - Service Unavailable
+
+> [!IMPORTANT]
+> Maintain good security practices for API
+> Use ssl
+
+> [!NOTE]
+> Try use caching to reduce server load
+
+
 
 #### AUTH Method
 
