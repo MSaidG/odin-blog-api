@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog</title>
+  <link rel="shortcut icon" href="data:image/x-icon;favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <% if (locals.user) { %>
+    <h1>Hello, <%= locals.user.username %></h1>
+    <a href="/auth/logout">Logout</a>
+    
+  <% } else { %>
+    <div class="auth">
+      <button id="login">Login</button>
+      <button id="signup">Sign Up</button>
+      <div class="error">
+        <%= locals.error %>
+      </div>
+      <div class="login">
+        <h2>Login</h2>
+        <form action="/auth/login" method="post">
+          <label for="username">Username: <input type="text" name="username"></label>
+          <label for="password">Password: <input type="password" name="password"></label>
+          <button type="submit">Login</button>
+        </form>
+      </div>
+      <div class="signup">
+        <h2>Sign Up</h2>
+        <form action="/auth/signup" method="post">
+          <label for="username">Username: <input type="text" name="username"></label>
+          <label for="email">Email: <input type="email" name="email"></label>
+          <label for="password">Password: <input type="password" name="password"></label>
+          <label for="confirmPassword">Confirm Password: <input type="password" name="confirmPassword"></label>
+          <button type="submit">Sign Up</button>
+        </form>
+      </div>
+    </div>
+  <% } %>
+
+  <script>
+    const loginButton = document.getElementById("login");
+    const signupButton = document.getElementById("signup");
+    const loginDiv = document.querySelector(".login");
+    const signupDiv = document.querySelector(".signup");
+
+    loginDiv.style.display = "none";
+    signupButton.disabled = true;
+    loginButton.addEventListener("click", () => {
+      loginDiv.style.display = "block";
+      signupDiv.style.display = "none";
+      loginButton.disabled = true;
+      signupButton.disabled = false;
+    });
+    signupButton.addEventListener("click", (e) => {
+      signupDiv.style.display = "block";
+      loginDiv.style.display = "none";
+      loginButton.disabled = false;
+      signupButton.disabled = true;
+    });
+
+
+    fetch("/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        password
+      }),
+      authorization: `Bearer ${document.cookie}`,
+    })
+      .then(async(response) => {
+        const token = await response.json();
+        document.cookie = `token=${token}; SameSite=None; Secure=true;`;
+      })
+      .then((data) => {
+        console.log(data);
+    }); 
+
+    fetch("*", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      authorization: `Bearer ${document.cookie}`,
+    })
+      .then(async(response) => {
+        const token = await response.json();
+        console.log(token);
+        document.cookie = `token=${token}; SameSite=None; Secure=true;`;
+      })
+      .then((data) => {
+        console.log(data)
+      .catch((error) => { 
+        console.log(error);
+      });
+    });
+
+  </script>
+
+
+</body>
+</html>
