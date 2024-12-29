@@ -27,10 +27,65 @@ app.use(express.static("public"));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: `http://localhost:${PORT}`,
+    origin: [`http://localhost:${PORT}`, "http://localhost:5173"],
     credentials: true,
   })
 );
+
+const blogMock = [
+  {
+    title: "Blog 1",
+    overview: "This is blog 1",
+    text: "This is blog 1",
+    authorId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
+  },
+  {
+    title: "Blog 2",
+    overview: "This is blog 2",
+    text: "This is blog 2",
+    authorId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
+  },
+  {
+    title: "Blog 3",
+    overview: "This is blog 3",
+    text: "This is blog 3",
+    authorId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
+  },
+  {
+    title: "Blog 4",
+    overview: "This is blog 4",
+    text: "This is blog 4",
+    authorId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
+  },
+  {
+    title: "Blog 5",
+    overview: "This is blog 5",
+    text: "This is blog 5",
+    authorId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
+  },
+];
+
+app.post("/api/blogs", async (req, res) => {
+  const post = await prisma.post.create({
+    data: {
+      title: blogMock[0].title,
+      overview: blogMock[0].overview,
+      text: blogMock[0].text,
+      authorId: blogMock[0].authorId,
+    },
+  });
+
+  console.log(post);
+
+  res.json(blogMock[0]);
+});
+
+app.get("/api/blogs", async (req, res) => {
+  const posts = await prisma.post.findMany();
+  console.log(posts);
+
+  res.json(posts);
+});
 
 app.post("/auth/signup", async (req, res, next) => {
   const { username, email, password } = req.body;
