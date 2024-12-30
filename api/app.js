@@ -34,12 +34,6 @@ app.use(
 
 const blogMock = [
   {
-    title: "Blog 1",
-    overview: "This is blog 1",
-    text: "This is blog 1",
-    authorId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
-  },
-  {
     title: "Blog 2",
     overview: "This is blog 2",
     text: "This is blog 2",
@@ -65,19 +59,123 @@ const blogMock = [
   },
 ];
 
+const commentMock = [
+  {
+    text: "This is comment 1",
+    userId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
+    postId: 1,
+  },
+  {
+    text: "This is comment 2",
+    userId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
+    postId: 1,
+  },
+  {
+    text: "This is comment 3",
+    userId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
+    postId: 1,
+  },
+  {
+    text: "This is comment 4",
+    userId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
+    postId: 1,
+  },
+];
+
 app.post("/api/blogs", async (req, res) => {
-  const post = await prisma.post.create({
-    data: {
-      title: blogMock[0].title,
-      overview: blogMock[0].overview,
-      text: blogMock[0].text,
-      authorId: blogMock[0].authorId,
-    },
+  let posts = [];
+  blogMock.forEach(async (blog) => {
+    try {
+      const post = await prisma.post.create({
+        data: {
+          title: blog.title,
+          overview: blog.overview,
+          text: blog.text,
+          authorId: blog.authorId,
+        },
+      });
+      posts.push(post);
+    } catch (error) {
+      console.log(error.message);
+    }
   });
 
-  console.log(post);
+  console.log(blogMock);
 
-  res.json(blogMock[0]);
+  res.json(posts);
+});
+
+app.get("/api/posts/:postId/comments", async (req, res) => {
+  const comments = await prisma.comment
+    .findMany({
+      where: {
+        postId: parseInt(req.params.postId),
+      },
+      include: {
+        user: true,
+      },
+    })
+    .then((comments) => {
+      console.log(comments);
+      res.json(comments);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+});
+
+app.get("/api/posts/:postId", async (req, res) => {
+  const post = await prisma.post
+    .findUnique({
+      where: {
+        id: parseInt(req.params.postId),
+      },
+      include: {
+        author: {
+          select: {
+            username: true,
+          },
+        },
+        Comment: {
+          include: {
+            user: {
+              select: {
+                username: true,
+              },
+            },
+          },
+        },
+      },
+    })
+    .then((post) => {
+      console.log(post);
+      res.json(post);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+});
+
+app.post("/users/:userId/posts/:postId/comments", async (req, res) => {
+  const { userId, postId } = req.params;
+  // const { text } = req.body;
+  const text = commentMock[0].text;
+  const comment = await prisma.comment
+    .create({
+      data: {
+        text: text,
+        userId: userId,
+        postId: parseInt(postId),
+      },
+    })
+    .then((comment) => {
+      console.log(comment);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+
+  res.json(comment);
 });
 
 app.get("/api/blogs", async (req, res) => {
@@ -86,6 +184,11 @@ app.get("/api/blogs", async (req, res) => {
 
   res.json(posts);
 });
+
+/////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 
 app.post("/auth/signup", async (req, res, next) => {
   const { username, email, password } = req.body;
