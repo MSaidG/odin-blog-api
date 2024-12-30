@@ -100,8 +100,6 @@ app.post("/api/blogs", async (req, res) => {
     }
   });
 
-  console.log(blogMock);
-
   res.json(posts);
 });
 
@@ -116,7 +114,6 @@ app.get("/api/posts/:postId/comments", async (req, res) => {
       },
     })
     .then((comments) => {
-      console.log(comments);
       res.json(comments);
     })
     .catch((error) => {
@@ -148,7 +145,6 @@ app.get("/api/posts/:postId", async (req, res) => {
       },
     })
     .then((post) => {
-      console.log(post);
       res.json(post);
     })
     .catch((error) => {
@@ -156,10 +152,10 @@ app.get("/api/posts/:postId", async (req, res) => {
     });
 });
 
-app.post("/users/:userId/posts/:postId/comments", async (req, res) => {
+app.post("/api/users/:userId/posts/:postId/comments", async (req, res) => {
   const { userId, postId } = req.params;
-  // const { text } = req.body;
-  const text = commentMock[0].text;
+  const { text } = req.body;
+  // const text = commentMock[0].text;
   const comment = await prisma.comment
     .create({
       data: {
@@ -169,20 +165,42 @@ app.post("/users/:userId/posts/:postId/comments", async (req, res) => {
       },
     })
     .then((comment) => {
-      console.log(comment);
+      res.json(comment);
     })
     .catch((error) => {
       console.log(error.message);
     });
+});
 
-  res.json(comment);
+app.get("/api/users/:userId/posts/:postId/comments", async (req, res) => {
+  const { userId, postId } = req.params;
+  const comment = await prisma.comment
+    .findFirst({
+      where: {
+        userId: userId,
+        postId: parseInt(postId),
+      },
+      orderBy: {
+        time: "desc",
+      },
+    })
+    .then((comment) => {
+      res.json(comment);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
 });
 
 app.get("/api/blogs", async (req, res) => {
-  const posts = await prisma.post.findMany();
-  console.log(posts);
-
-  res.json(posts);
+  const posts = await prisma.post
+    .findMany()
+    .then((posts) => {
+      res.json(posts);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
 });
 
 /////////////////////////////////////////////////////////////////////////
