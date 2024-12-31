@@ -112,6 +112,9 @@ app.get("/api/posts/:postId/comments", async (req, res) => {
       include: {
         user: true,
       },
+      orderBy: {
+        time: "desc",
+      },
     })
     .then((comments) => {
       res.json(comments);
@@ -152,25 +155,28 @@ app.get("/api/posts/:postId", async (req, res) => {
     });
 });
 
-app.post("/api/users/:userId/posts/:postId/comments", async (req, res) => {
-  const { userId, postId } = req.params;
-  const { text } = req.body;
-  // const text = commentMock[0].text;
-  const comment = await prisma.comment
-    .create({
-      data: {
-        text: text,
-        userId: userId,
-        postId: parseInt(postId),
-      },
-    })
-    .then((comment) => {
-      res.json(comment);
-    })
-    .catch((error) => {
-      console.log(error.message);
-    });
-});
+app.post(
+  "/api/users/:userId/posts/:postId/comments",
+  authenticateToken,
+  async (req, res) => {
+    const { userId, postId } = req.params;
+    const { text } = req.body;
+    const comment = await prisma.comment
+      .create({
+        data: {
+          text: text,
+          userId: userId,
+          postId: parseInt(postId),
+        },
+      })
+      .then((comment) => {
+        res.json(comment);
+      })
+      .catch((error) => {
+        console.log(error.message);
+      });
+  }
+);
 
 app.get("/api/users/:userId/posts/:postId/comments", async (req, res) => {
   const { userId, postId } = req.params;
@@ -179,6 +185,9 @@ app.get("/api/users/:userId/posts/:postId/comments", async (req, res) => {
       where: {
         userId: userId,
         postId: parseInt(postId),
+      },
+      include: {
+        user: true,
       },
       orderBy: {
         time: "desc",
@@ -251,13 +260,13 @@ app.post("/auth/login", async (req, res) => {
   const user = await prisma.user.findUnique({ where: { username: username } });
   if (!user) {
     console.log("User not found");
-    return res.redirect("/");
+    return res.json({ message: "User not found" });
   }
 
   const isValid = await bcrypt.compare(password, user.password);
   if (!isValid) {
     console.log("Invalid password");
-    return res.redirect("/");
+    return res.json({ message: "Invalid password" });
   }
 
   const accessToken = jwt.sign(
@@ -277,32 +286,36 @@ app.post("/auth/login", async (req, res) => {
   );
 
   res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: true,
+    // httpOnly: true,
+    // secure: true,
     sameSite: "strict",
+    domain: "localhost",
+    path: "/",
     maxAge: 60 * 60 * 20,
   });
 
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: true,
+    // httpOnly: true,
+    // secure: true,
     sameSite: "strict",
+    domain: "localhost",
+    path: "/",
     // path: "/auth/refresh",
     maxAge: 60 * 60 * 60,
   });
 
-  res.redirect("/");
+  res.json({ message: "Login successful" });
 });
 
 app.get("/auth/refresh", (req, res) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
-    return res.redirect("/");
+    return res.redirect("http://localhost:5173/");
   }
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err) {
       res.cookie("refreshToken", "", { maxAge: 0 });
-      return res.redirect("/");
+      return res.redirect("http://localhost:5173/");
     }
     const accessToken = jwt.sign(
       { username: user.username },
@@ -319,19 +332,23 @@ app.get("/auth/refresh", (req, res) => {
       }
     );
     res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
+      // httpOnly: true,
+      // secure: true,
       sameSite: "strict",
+      domain: "localhost",
+      path: "/",
       maxAge: 60 * 60 * 20,
     });
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
+      // httpOnly: true,
+      // secure: true,
       sameSite: "strict",
+      domain: "localhost",
+      path: "/",
       // path: "/auth/refresh",
       maxAge: 60 * 60 * 60,
     });
-    res.redirect("/");
+    res.redirect("http://localhost:5173/");
   });
 });
 

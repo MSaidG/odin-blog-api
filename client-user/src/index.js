@@ -16,18 +16,27 @@ const blogTitle = document.querySelector(".blog-title");
 const blogAuthor = document.querySelector(".blog-author");
 const blogBody = document.querySelector(".blog-body");
 const blogDate = document.querySelector(".blog-date");
+const collapse = document.querySelector("#collapse");
 
 blogPage.style.display = "none";
+
+collapse.addEventListener("click", () => {
+  if (commentList.style.display === "none") {
+    commentList.style.display = "flex";
+    commentList.scrollTop = commentList.scrollHeight;
+  } else {
+    commentList.style.display = "none";
+    commentList.scrollTop = 0;
+  }
+});
 
 addCommentButton.addEventListener("click", (e) => {
   cover.style.display = "block";
   commentPopup.style.visibility = "visible";
   const postId = e.target.getAttribute("data-id");
-  console.log("clicked add comment button");
 });
 
 homeButton.addEventListener("click", () => {
-  console.log("clicked home button");
   homePage.style.display = "block";
   blogPage.style.display = "none";
 });
@@ -45,7 +54,7 @@ submitCommentButton.addEventListener("click", () => {
   const postId = addCommentButton.getAttribute("data-id");
   const userId = "f8c4b310-ea72-4df5-9c7a-348b361071fa"; // USER ID HARD CODED FOR NOW TO TEST
   postComment(postId, userId);
-  getComment(postId, userId);
+  // getComment(postId, userId);
 });
 
 commentCloseButton.addEventListener("click", () => {
@@ -63,7 +72,6 @@ fetch("http://localhost:4000/api/blogs", {
     return response.json();
   })
   .then((data) => {
-    console.log(data);
     parseBlogsData(data);
   })
   .catch((error) => {
@@ -81,7 +89,6 @@ function getBlog(blogId) {
       return response.json();
     })
     .then((data) => {
-      console.log(data);
       parseBlog(data);
     })
     .catch((error) => {
@@ -111,7 +118,6 @@ function getComments(postId) {
       return response.json();
     })
     .then((data) => {
-      console.log(data);
       parseComments(data);
     })
     .catch((error) => {
@@ -126,7 +132,7 @@ function parseComments(data) {
   });
 }
 
-function addComment(comment) {
+function addComment(comment, isInserted = false) {
   const listItem = document.createElement("li");
   const commentCard = document.createElement("div");
   commentCard.classList.add("comment");
@@ -150,7 +156,11 @@ function addComment(comment) {
   });
   commentCard.appendChild(commentReplyButton);
   listItem.appendChild(commentCard);
-  commentList.appendChild(listItem);
+  if (!isInserted) {
+    commentList.appendChild(listItem);
+  } else {
+    commentList.insertBefore(listItem, commentList.firstChild);
+  }
 }
 
 function parseBlogsData(data) {
@@ -195,36 +205,62 @@ function addReadMoreButtonsEventListener() {
       blogCard.classList.toggle("expanded");
       homePage.style.display = "none";
       blogPage.style.display = "block";
-      console.log("clicked");
     });
   });
 }
 
-function postComment(postId, userId) {
+function getAccessToken(documentCookie) {
+  let accessToken = documentCookie && documentCookie.split("=")[1];
+  if (accessToken != null) {
+    documentCookie.split(" ").forEach((cookie) => {
+      if (cookie.startsWith("accessToken")) {
+        accessToken = cookie.split("=")[1].split(";")[0];
+        console.log("11: " + accessToken);
+      }
+    });
+  }
+  return accessToken;
+}
+
+async function postComment(postId, userId) {
   commentEditorValue = commentEditor.value;
-  console.log(commentEditorValue, postId);
-  fetch(`http://localhost:4000/api/users/${userId}/posts/${postId}/comments`, {
-    // fetch(`http://localhost:4000/api/users/1/posts/${postId}/comments`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ text: commentEditorValue }),
-  })
+  await fetch(
+    `http://localhost:4000/api/users/${userId}/posts/${postId}/comments`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        credintials: "include",
+        Authorization: `accessToken ${getAccessToken(document.cookie)}`,
+        cookie: document.cookie,
+      },
+      body: JSON.stringify({ text: commentEditorValue }),
+    }
+  )
     .then((response) => {
-      return response.json();
+      if (response.status === 401) {
+        redirectToAuthRefresh();
+        return alert("You must be logged in to leave a comment");
+      }
+      response.json();
     })
     .then((data) => {
+      console.log("GET COMMENT? ");
+      getComment(postId, userId);
       console.log(data);
-      getComments(postId);
     })
     .catch((error) => {
       console.log(error);
+      return error;
     });
 }
 
+function redirectToAuthRefresh() {
+  window.location.href = "http://localhost:4000/auth/refresh";
+  return null;
+}
+
 function getComment(postId, userId) {
-  console.log(postId);
   fetch(`http://localhost:4000/api/users/${userId}/posts/${postId}/comments`, {
     method: "GET",
     headers: {
@@ -236,7 +272,7 @@ function getComment(postId, userId) {
     })
     .then((data) => {
       console.log(data);
-      addComment(data);
+      addComment(data, true);
     })
     .catch((error) => {
       console.log(error);
