@@ -32,77 +32,6 @@ app.use(
   })
 );
 
-const blogMock = [
-  {
-    title: "Blog 2",
-    overview: "This is blog 2",
-    text: "This is blog 2",
-    authorId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
-  },
-  {
-    title: "Blog 3",
-    overview: "This is blog 3",
-    text: "This is blog 3",
-    authorId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
-  },
-  {
-    title: "Blog 4",
-    overview: "This is blog 4",
-    text: "This is blog 4",
-    authorId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
-  },
-  {
-    title: "Blog 5",
-    overview: "This is blog 5",
-    text: "This is blog 5",
-    authorId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
-  },
-];
-
-const commentMock = [
-  {
-    text: "This is comment 1",
-    userId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
-    postId: 1,
-  },
-  {
-    text: "This is comment 2",
-    userId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
-    postId: 1,
-  },
-  {
-    text: "This is comment 3",
-    userId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
-    postId: 1,
-  },
-  {
-    text: "This is comment 4",
-    userId: "f8c4b310-ea72-4df5-9c7a-348b361071fa",
-    postId: 1,
-  },
-];
-
-app.post("/api/blogs", async (req, res) => {
-  let posts = [];
-  blogMock.forEach(async (blog) => {
-    try {
-      const post = await prisma.post.create({
-        data: {
-          title: blog.title,
-          overview: blog.overview,
-          text: blog.text,
-          authorId: blog.authorId,
-        },
-      });
-      posts.push(post);
-    } catch (error) {
-      console.log(error.message);
-    }
-  });
-
-  res.json(posts);
-});
-
 app.get("/api/posts/:postId/comments", async (req, res) => {
   const comments = await prisma.comment
     .findMany({
@@ -212,6 +141,24 @@ app.get("/api/blogs", async (req, res) => {
     });
 });
 
+app.post("/api/user/:userId/posts", authenticateToken, async (req, res) => {
+  const { userId } = req.params;
+  const { text } = req.body;
+  const post = await prisma.post
+    .create({
+      data: {
+        text: text,
+        authorId: userId,
+      },
+    })
+    .then((post) => {
+      res.json(post);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+});
+
 /////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -257,16 +204,20 @@ app.post("/auth/signup", async (req, res, next) => {
 app.post("/auth/login", async (req, res) => {
   const { username, password } = req.body;
 
+  if (!username || !password) {
+    console.log("Missing username or password");
+    return res.json({ message: "Missing username or password" });
+  }
   const user = await prisma.user.findUnique({ where: { username: username } });
   if (!user) {
     console.log("User not found");
-    return res.json({ message: "User not found" });
+    return res.status(404).json({ message: "User not found" });
   }
 
   const isValid = await bcrypt.compare(password, user.password);
   if (!isValid) {
     console.log("Invalid password");
-    return res.json({ message: "Invalid password" });
+    return res.status(404).json({ message: "Invalid password" });
   }
 
   const accessToken = jwt.sign(
@@ -304,7 +255,7 @@ app.post("/auth/login", async (req, res) => {
     maxAge: 60 * 60 * 60,
   });
 
-  res.json({ message: "Login successful" });
+  res.status(200).json({ message: "Login successful" });
 });
 
 app.get("/auth/refresh", (req, res) => {

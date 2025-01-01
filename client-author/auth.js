@@ -1,6 +1,3 @@
-checkUser();
-
-let isUserLoggedIn = false;
 const authPopup = document.getElementById("auth-popup");
 const loginForm = document.querySelector(".login-form");
 const signupForm = document.querySelector(".signup-form");
@@ -12,13 +9,11 @@ const signupFormButton = document.getElementById("signup");
 const loginFormButton = document.getElementById("login");
 
 const loginNav = document.getElementById("login-nav");
-const logoutNav = document.getElementById("logout-nav");
 const authCloseButton = document.getElementById("auth-close");
 
-const usernameInput = document.getElementById("username-login");
+const usernameInput = document.getElementById("username-input");
 
 const messages = document.getElementById("messages");
-const profileName = document.getElementById("profile-name");
 
 loginForm.style.display = "block";
 signupForm.style.display = "none";
@@ -61,12 +56,9 @@ signupFormButton.addEventListener("click", () => {
   signup();
 });
 
-loginForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const username = e.target.username.value;
-  const password = e.target.password.value;
+loginFormButton.addEventListener("click", () => {
   resetAuthPopup();
-  login(username, password);
+  login();
 });
 
 function resetAuthPopup() {
@@ -77,34 +69,26 @@ function resetAuthPopup() {
   loginButton.style.opacity = "1";
 }
 
-async function login(username, password) {
-  await fetch("http://localhost:4000/auth/login", {
+function login() {
+  fetch("http://localhost:4000/auth/login", {
     method: "POST",
     credentials: "include",
-    mode: "cors",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      username: username,
-      password: password,
+      username,
+      password,
     }),
   })
     .then((response) => {
-      console.log(response);
-      if (!response.ok) {
-        alert("Please make sure you entered the right creditenials");
-        profileName.textContent = "";
-      } else {
-        profileName.textContent = "Welcome " + username;
-        loginNav.style.display = "none";
-        logoutNav.style.display = "block";
-      }
-      response.json();
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data);
     })
     .catch((error) => {
       console.log(error);
-      return error;
     });
 }
 
@@ -139,22 +123,6 @@ function logout() {
     },
   })
     .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      console.log(data);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-}
-
-function checkUser() {
-  fetch(window.location.href, {
-    method: "GET",
-  })
-    .then((response) => {
-      console.log(response);
       return response.json();
     })
     .then((data) => {

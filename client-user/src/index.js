@@ -9,7 +9,6 @@ const submitCommentButton = document.querySelector("#comment-submit");
 const commentCloseButton = document.querySelector("#comment-close");
 const commentList = document.querySelector(".comments-list");
 const commentEditor = document.querySelector("#comment-editor");
-let commentEditorValue = "";
 
 const blogContent = document.querySelector(".blog-content");
 const blogTitle = document.querySelector(".blog-title");
@@ -17,6 +16,7 @@ const blogAuthor = document.querySelector(".blog-author");
 const blogBody = document.querySelector(".blog-body");
 const blogDate = document.querySelector(".blog-date");
 const collapse = document.querySelector("#collapse");
+let commentEditorValue = "";
 
 blogPage.style.display = "none";
 
