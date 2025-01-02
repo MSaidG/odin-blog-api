@@ -1,3 +1,5 @@
+import { getAccessToken } from "./auth";
+
 const replyButtons = document.querySelectorAll(".reply-button");
 const homePage = document.querySelector("#home");
 const blogPage = document.querySelector("#blog");
@@ -209,19 +211,6 @@ function addReadMoreButtonsEventListener() {
   });
 }
 
-function getAccessToken(documentCookie) {
-  let accessToken = documentCookie && documentCookie.split("=")[1];
-  if (accessToken != null) {
-    documentCookie.split(" ").forEach((cookie) => {
-      if (cookie.startsWith("accessToken")) {
-        accessToken = cookie.split("=")[1].split(";")[0];
-        console.log("11: " + accessToken);
-      }
-    });
-  }
-  return accessToken;
-}
-
 async function postComment(postId, userId) {
   commentEditorValue = commentEditor.value;
   await fetch(
@@ -230,7 +219,7 @@ async function postComment(postId, userId) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        credintials: "include",
+        // credintials: "include",
         Authorization: `accessToken ${getAccessToken(document.cookie)}`,
         cookie: document.cookie,
       },
