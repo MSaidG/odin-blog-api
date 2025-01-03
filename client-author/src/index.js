@@ -19,8 +19,8 @@ const blogAuthor = document.querySelector(".blog-author");
 const blogBody = document.querySelector(".blog-body");
 const blogDate = document.querySelector(".blog-date");
 const collapse = document.querySelector("#collapse");
-const saveBlogButton = document.getElementById("save-blog");
-const editNav = document.getElementById("edit-nav");
+const createBlogButton = document.getElementById("create-blog");
+const newBlog = document.getElementById("new-blog-nav");
 const homeNav = document.getElementById("home-nav");
 const messages = document.getElementById("messages");
 const updateBlogButton = document.getElementById("update-blog");
@@ -32,16 +32,30 @@ const unpublishBlogButton = document.getElementById("unpublish-blog");
 const loginNav = document.getElementById("login-nav");
 
 blogPage.style.display = "none";
+createBlogButton.style.display = "none";
+updateBlogButton.style.display = "none";
+deleteBlogButton.style.display = "none";
+publishBlogButton.style.display = "none";
+unpublishBlogButton.style.display = "none";
 let commentEditorValue = "";
 
-editNav.addEventListener("click", () => {
+newBlog.addEventListener("click", () => {
   blogPage.style.display = "block";
+  createBlogButton.style.display = "block";
   homePage.style.display = "none";
+  newBlog.style.display = "none";
 });
 
 homeNav.addEventListener("click", () => {
   blogPage.style.display = "none";
   homePage.style.display = "block";
+  createBlogButton.setAttribute("data-id", "");
+  createBlogButton.style.display = "none";
+  updateBlogButton.style.display = "none";
+  deleteBlogButton.style.display = "none";
+  publishBlogButton.style.display = "none";
+  unpublishBlogButton.style.display = "none";
+  newBlog.style.display = "block";
 });
 
 collapse.addEventListener("click", () => {
@@ -86,19 +100,69 @@ commentCloseButton.addEventListener("click", () => {
   commentPopup.style.visibility = "hidden";
 });
 
-saveBlogButton.addEventListener("click", () => {
-  saveBlog();
+createBlogButton.addEventListener("click", (e) => {
+  const postId = e.target.getAttribute("data-id");
+  createBlog();
 });
 
 function setMessage(message) {
-  const timeout = 3000;
+  const timeout = 5000;
   messages.textContent = message;
   setTimeout(() => {
     messages.textContent = "";
   }, timeout);
 }
 
-function saveBlog() {
+function deleteBlog(username, postId) {
+  fetch(`http://localhost:4000/api/users/${username}/posts/${postId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      // credintials: "include",
+      Authorization: `accessToken ${getAccessToken(document.cookie)}`,
+      cookie: document.cookie,
+    },
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      setMessage(data);
+      console.log(data);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function updateBlog(username, postId) {
+  fetch(`http://localhost:4000/api/users/${username}/posts/${postId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      // credintials: "include",
+      Authorization: `accessToken ${getAccessToken(document.cookie)}`,
+      cookie: document.cookie,
+    },
+    body: JSON.stringify({
+      title: blogTitle.textContent,
+      text: blogBody.innerHTML,
+      overview: blogOverview.textContent,
+    }),
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      setMessage(data);
+      console.log(data);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function createBlog() {
   const username = "test";
   const html = blogBody.innerHTML;
   const newHtml = html.replace(
@@ -242,12 +306,13 @@ function parseBlogsData(data) {
     const blogOverview = document.createElement("p");
     blogOverview.textContent = blog.overview;
     blogCard.appendChild(blogOverview);
-    const readMoreButton = document.createElement("a");
-    readMoreButton.classList.add("read-more");
-    readMoreButton.setAttribute("href", "#");
-    readMoreButton.setAttribute("data-id", blog.id);
-    readMoreButton.textContent = "Read More";
-    blogCard.appendChild(readMoreButton);
+    const editButton = document.createElement("a");
+    editButton.classList.add("edit");
+    editButton.setAttribute("href", "#");
+    editButton.setAttribute("data-id", blog.id);
+    createBlogButton.setAttribute("data-id", blog.id);
+    editButton.textContent = "Edit";
+    blogCard.appendChild(editButton);
     const timestamp = document.createElement("time");
     const time = new Date(blog.time)
       .toDateString()
@@ -261,14 +326,23 @@ function parseBlogsData(data) {
     document.querySelector("#blog-cards").appendChild(blogCard);
   });
 
-  addReadMoreButtonsEventListener();
+  addEditButtonsEventListener();
 }
 
-function addReadMoreButtonsEventListener() {
-  document.querySelectorAll(".read-more").forEach((button) => {
+function addEditButtonsEventListener() {
+  document.querySelectorAll(".edit").forEach((button) => {
     button.addEventListener("click", () => {
       const blogCard = button.parentElement;
       const blogId = button.getAttribute("data-id");
+      updateBlogButton.style.display = "block";
+      updateBlogButton.setAttribute("data-id", blogId);
+      deleteBlogButton.style.display = "block";
+      deleteBlogButton.setAttribute("data-id", blogId);
+      publishBlogButton.style.display = "block";
+      publishBlogButton.setAttribute("data-id", blogId);
+      unpublishBlogButton.style.display = "block";
+      unpublishBlogButton.setAttribute("data-id", blogId);
+      newBlog.style.display = "none";
       getBlog(blogId);
       getComments(blogId);
       blogCard.classList.toggle("expanded");

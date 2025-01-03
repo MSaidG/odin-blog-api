@@ -147,6 +147,52 @@ app.get("/api/blogs", async (req, res) => {
     });
 });
 
+app.delete(
+  "/api/user/:username/posts/:postId",
+  authenticateToken,
+  async (req, res) => {
+    const { username, postId } = req.params;
+    const post = await prisma.post
+      .delete({
+        where: {
+          id: parseInt(postId),
+        },
+      })
+      .then((post) => {
+        res.json(post);
+      })
+      .catch((error) => {
+        console.log(error.message);
+      });
+  }
+);
+
+app.put(
+  "/api/user/:username/posts/:postId",
+  authenticateToken,
+  async (req, res) => {
+    const { username, postId } = req.params;
+    const { title, text, overview } = req.body;
+    const post = await prisma.post
+      .update({
+        where: {
+          id: parseInt(postId),
+        },
+        data: {
+          title: title,
+          text: text,
+          overview: overview,
+        },
+      })
+      .then((post) => {
+        res.json(post);
+      })
+      .catch((error) => {
+        console.log(error.message);
+      });
+  }
+);
+
 app.post("/api/user/:username/posts", authenticateToken, async (req, res) => {
   const { username } = req.params;
   const { title, text, overview } = req.body;
