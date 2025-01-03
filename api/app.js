@@ -108,6 +108,7 @@ app.post(
       })
       .catch((error) => {
         console.log(error.message);
+        res.json(error.message);
       });
   }
 );
@@ -146,14 +147,20 @@ app.get("/api/blogs", async (req, res) => {
     });
 });
 
-app.post("/api/user/:userId/posts", authenticateToken, async (req, res) => {
-  const { userId } = req.params;
-  const { text } = req.body;
+app.post("/api/user/:username/posts", authenticateToken, async (req, res) => {
+  const { username } = req.params;
+  const { title, text, overview } = req.body;
   const post = await prisma.post
     .create({
       data: {
+        title: title,
         text: text,
-        authorId: userId,
+        overview: overview,
+        author: {
+          connect: {
+            username: username,
+          },
+        },
       },
     })
     .then((post) => {

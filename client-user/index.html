@@ -16,7 +16,7 @@
       <h1>Log Blogs</h1>
       <p id="profile-name"></p>
       <nav>
-        <ul>
+        <ul id="nav-list">
           <li><a href="#">Home</a></li>
           <li><a href="#">Blogs</a></li>
           <li><a id="login-nav" href="#" style="display: none;">Log In</a></li>
@@ -27,18 +27,13 @@
     <div id="messages"></div>
     
     <div id="home">
-
-  
       <main>
-        <div id="blog-cards">
-
-        </div>  
-        
+        <div id="blog-cards"></div>  
       </main>
-
     </div>
 
     <div id="blog">
+
       <div class="blog-content">
         <div class="blog-header">
           <h1 class="blog-title">Blog 1</h1> <span class="blog-author"> by MSaidG</span>
@@ -88,10 +83,13 @@
  
 
       <aside></aside>
+      
     </div>
 
     <div id="auth-popup">
+
       <button id="auth-close">X</button>
+
       <div class="auth-buttons">
         <button id="login-button">Login</button>
         <button id="signup-button">Sign Up</button>

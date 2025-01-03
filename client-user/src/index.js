@@ -101,7 +101,8 @@ function getBlog(blogId) {
 function parseBlog(blog) {
   blogTitle.textContent = blog.title;
   blogAuthor.textContent = "by   " + blog.author.username;
-  blogBody.textContent = blog.text;
+  // blogBody.textContent = blog.text;
+  blogBody.innerHTML = blog.text;
   const time = new Date(blog.time).toUTCString();
   blogDate.setAttribute("datetime", time);
   blogDate.textContent = time;

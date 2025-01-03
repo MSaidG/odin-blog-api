@@ -8,6 +8,16 @@ const dfreeHeaderConfig = {
   quickbars_selection_toolbar: "italic underline",
 };
 
+const dfreeOverviewConfig = {
+  selector: ".dfree-overview",
+  menubar: false,
+  inline: true,
+  toolbar: false,
+  plugins: ["quickbars"],
+  quickbars_insert_toolbar: "undo redo",
+  quickbars_selection_toolbar: "italic underline",
+};
+
 const dfreeBodyConfig = {
   selector: ".dfree-body",
   menubar: false,
@@ -34,5 +44,6 @@ const dfreeBodyConfig = {
   powerpaste_html_import: "clean",
 };
 
+tinymce.init(dfreeOverviewConfig);
 tinymce.init(dfreeHeaderConfig);
 tinymce.init(dfreeBodyConfig);

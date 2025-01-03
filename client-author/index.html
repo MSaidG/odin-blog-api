@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="module" src="src/tinymce.js"></script>
+    <script type="module" src="src/index.js" defer></script>
+    <link rel="stylesheet" href="src/style.css">
+    <script src="https://cdn.tiny.cloud/1/cza1ryueagagqx7uu3oh4r6ijkyut513wd0e7np3gjgovea4/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <title>Vite App</title>
+  </head>
+  <body>
+
+    <header>
+      <h1>Log Blogs</h1>
+      <p id="profile-name"></p>
+      <nav>
+        <ul id="nav-list">
+          <li><a id="home-nav" href="#">Home</a></li>
+          <li><a href="#">Blogs</a></li>
+          <li><a id="edit-nav" href="#">Edit</a></li>
+          <div>
+            <li><a id="save-blog" href="#">Save Blog</a></li>
+            <li><a id="update-blog" href="#">Update Blog</a></li>
+            <li><a id="delete-blog" href="#">Delete Blog</a></li>
+          </div>
+          <div>
+            <li><a id="publish-blog" href="#">Publish Blog</a></li>
+            <li><a id="unpublish-blog" href="#">Unpublish Blog</a></li>
+          </div>
+          <div>
+            <li><a id="login-nav" href="#">Log In</a></li>
+            <li><a id="logout-nav" href="#">Login Out</a></li>
+
+          </div>
+        </ul>
+      </nav>
+    </header>
+    <div id="messages"></div>
+
+    <div id="home">
+      <main>
+        <div id="blog-cards"></div>  
+      </main>
+    </div>
+
+    <div id="blog">
+
+      <div class='blog-content demo-dfree'>
+        <h4 class="blog-overview dfree-overview mce-content-body" contenteditable="true" style="position: relative;" spellcheck="false">
+          OVERVIEW
+        </h4>
+        <br/>
+        <h2 class="blog-title dfree-header mce-content-body" contenteditable="true" style="position: relative;" spellcheck="false">
+          Title
+        </h2>
+        <br/>
+        <div class="blog-body dfree-body mce-content-body" contenteditable="true" style="position: relative;" spellcheck="false">
+          <p><img src="https://tiny.cloud/images/medium-pic.jpg" style="display: block; margin-left: auto; margin-right: auto; width: 100%;"></p>
+          <br/>
+          <h2>Second Title</h2>
+      
+          <p>
+            Pargraph
+          </p>
+      
+          <p>
+            One of these enhancements is <strong>bold text</strong>: imagine file management for TinyMCE, in the cloud, made super easy.
+            Learn more at <a href='https://www.tiny.cloud/drive/'>tiny.cloud/drive/</a>, where you’ll find a working demo and an opportunity to provide feedback to the product team.
+          </p>
+      
+          <h3>Third Title</h3>
+      
+          <p>
+            List example:
+            <ul>
+              <li>List element 1(<em>e.g. WordPress, Umbraco</em>)</li>
+              <li>List element 2(<em>e.g. Blackboard</em>)</li>
+              <li>List element 3(<em>e.g. Marketo</em>)</li>
+              <li>List element 4 (<em>e.g. Constant Contact</em>)</li>
+              <li>List element 5 (<em>e.g. Eventbrite, Evernote, GoFundMe, Zendesk</em>)</li>
+            </ul>
+          </p>
+      
+          <p>
+            Another example:
+            <ol>
+              <li>Ordered list element 1 (<em>e.g. WordPress, Umbraco</em>)</li>
+              <li>Ordered list element 2 (<em>e.g. Blackboard</em>)</li>
+              <li>Ordered list element 3 (<em>e.g. Marketo</em>)</li>
+              <li>Ordered list element 4 (<em>e.g. Constant Contact</em>)</li>
+              <li>Ordered list element 5 (<em>e.g. Eventbrite, Evernote, GoFundMe, Zendesk</em>)</li>
+            </ol>
+          </p>
+  
+          <p>
+            And more paragraph...
+          </p>
+        </div>
+      </div>
+
+      <section class="comments">
+        <h2>Comments</h2>
+        <div class="buttons">
+          <button id="add-comment">Add Comment</button>
+          <button id="collapse">Collapse Comments</button>
+        </div>
+        <ul class="comments-list">
+          <li>
+            <div class="comment">
+              <h3>Commenter</h3>
+              <p>Comment 1</p>
+              <time datetime="2022-01-01">January 01, 2022</time>
+              <button class="reply-button">Reply</button>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+
+            
+      <div id="comment-popup">
+        <button id="comment-close">X</button>
+        <section>
+          <label for="name">Name</label>
+          <input type="text" id="name">
+        </section>
+        <section>
+          <label for="comment-editor">Comment</label>
+          <textarea id="comment-editor"></textarea>
+        </section>
+        <button id="comment-submit">Submit</button>
+      </div>
+      <aside></aside>
+    </div>
+
+    <div id="auth-popup">
+
+      <button id="auth-close">X</button>
+
+      <div class="auth-buttons">
+        <button id="login-button">Login</button>
+        <button id="signup-button">Sign Up</button>
+      </div>
+
+      <div class="login-form">
+        <form action="http://localhost:4000/auth/login" method="post">
+          <label for="username">Username: <input id="username-login" type="text" name="username"></label>
+          <label for="password">Password: <input id="password-login" type="password" name="password"></label>
+          <button id="login" type="submit">Login</button>
+        </form>
+      </div>
+
+      <div class="signup-form">
+        <form action="http://localhost:4000/auth/signup" method="post">
+          <label for="username">Username: <input type="text" name="username"></label>
+          <label for="email">Email: <input type="email" name="email"></label>
+          <label for="password">Password: <input type="password" name="password"></label>
+          <label for="confirmPassword">Confirm Password: <input type="password" name="confirmPassword"></label>
+          <button id="signup" type="submit">Sign Up</button>
+        </form>
+      </div>
+
+    </div>
+
+    <footer>
+      <p>@ 2024 by MSaidG</p>
+    </footer>
+
+    <div id="transparent-cover"></div>
+
+    
+
+    
+  </body>
+</html>

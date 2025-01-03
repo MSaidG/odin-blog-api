@@ -10,5 +10,8 @@
   },
   "devDependencies": {
     "vite": "^6.0.6"
+  },
+  "dependencies": {
+    "jwt-decode": "^4.0.0"
   }
 }
