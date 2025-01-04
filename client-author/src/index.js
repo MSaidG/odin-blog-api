@@ -1,4 +1,11 @@
-import { getAccessToken } from "./auth";
+import { getAccessToken, getUser } from "./auth";
+
+export let profile = { user: getUser() };
+export function setProfile(profile, value) {
+  profile.user = value;
+}
+
+console.log("PROFILE: " + profile.user);
 
 const replyButtons = document.querySelectorAll(".reply-button");
 const homePage = document.querySelector("#home");
@@ -39,6 +46,19 @@ publishBlogButton.style.display = "none";
 unpublishBlogButton.style.display = "none";
 let commentEditorValue = "";
 
+updateBlogButton.addEventListener("click", () => {
+  const blogId = updateBlogButton.getAttribute("data-id");
+  updateBlog(blogId);
+});
+
+deleteBlogButton.addEventListener("click", () => {
+  const blogId = deleteBlogButton.getAttribute("data-id");
+  deleteBlog(blogId);
+  console.log(profile.user);
+  getUserBlogs(profile.user.username);
+  viewHome();
+});
+
 newBlog.addEventListener("click", () => {
   blogPage.style.display = "block";
   createBlogButton.style.display = "block";
@@ -46,7 +66,7 @@ newBlog.addEventListener("click", () => {
   newBlog.style.display = "none";
 });
 
-homeNav.addEventListener("click", () => {
+function viewHome() {
   blogPage.style.display = "none";
   homePage.style.display = "block";
   createBlogButton.setAttribute("data-id", "");
@@ -56,6 +76,10 @@ homeNav.addEventListener("click", () => {
   publishBlogButton.style.display = "none";
   unpublishBlogButton.style.display = "none";
   newBlog.style.display = "block";
+}
+
+homeNav.addEventListener("click", () => {
+  viewHome();
 });
 
 collapse.addEventListener("click", () => {
@@ -113,8 +137,8 @@ function setMessage(message) {
   }, timeout);
 }
 
-function deleteBlog(username, postId) {
-  fetch(`http://localhost:4000/api/users/${username}/posts/${postId}`, {
+function deleteBlog(postId) {
+  fetch(`http://localhost:4000/api/posts/${postId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -135,8 +159,8 @@ function deleteBlog(username, postId) {
     });
 }
 
-function updateBlog(username, postId) {
-  fetch(`http://localhost:4000/api/users/${username}/posts/${postId}`, {
+function updateBlog(postId) {
+  fetch(`http://localhost:4000/api/posts/${postId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -151,6 +175,11 @@ function updateBlog(username, postId) {
     }),
   })
     .then((response) => {
+      console.log(response.status);
+      if (response.status === 401) {
+        setMessage("You must be logged in to update a blog");
+        return alert("You must be logged in to update a blog");
+      }
       return response.json();
     })
     .then((data) => {
@@ -195,21 +224,28 @@ function createBlog() {
     });
 }
 
-fetch("http://localhost:4000/api/blogs", {
-  method: "GET",
-  headers: {
-    "Content-Type": "application/json",
-  },
-})
-  .then((response) => {
-    return response.json();
+export function getUserBlogs(username) {
+  fetch(`http://localhost:4000/api/users/${username}/posts`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
   })
-  .then((data) => {
-    parseBlogsData(data);
-  })
-  .catch((error) => {
-    console.log(error);
-  });
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      parseBlogsData(data);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+console.log("USER: " + profile.user);
+if (profile.user) {
+  getUserBlogs(profile.user.username);
+}
 
 function getBlog(blogId) {
   fetch(`http://localhost:4000/api/posts/${blogId}`, {
@@ -230,8 +266,8 @@ function getBlog(blogId) {
 }
 
 function parseBlog(blog) {
+  blogOverview.textContent = blog.overview;
   blogTitle.textContent = blog.title;
-  blogAuthor.textContent = "by   " + blog.author.username;
   blogBody.textContent = blog.text;
   const time = new Date(blog.time).toUTCString();
   blogDate.setAttribute("datetime", time);
@@ -297,6 +333,7 @@ function addComment(comment, isInserted = false) {
 }
 
 function parseBlogsData(data) {
+  document.querySelector("#blog-cards").innerHTML = "";
   data.forEach((blog) => {
     const blogCard = document.createElement("div");
     blogCard.classList.add("card");
@@ -385,7 +422,7 @@ async function postComment(postId, userId) {
     });
 }
 
-function redirectToAuthRefresh() {
+export function redirectToAuthRefresh() {
   window.location.href = "http://localhost:4000/auth/refresh";
   return null;
 }

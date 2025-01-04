@@ -1,13 +1,33 @@
 import { jwtDecode } from "jwt-decode";
-export let isUserLoggedIn = false;
+import {
+  getUserBlogs,
+  setProfile,
+  profile,
+  redirectToAuthRefresh,
+} from "./index";
 
-// checkUser();
 const profileName = document.getElementById("profile-name");
-const token = getAccessToken(document.cookie);
-if (token) {
-  const user = jwtDecode(token);
-  profileName.textContent = "Welcome " + user.username;
+let isUserLoggedIn = false;
+
+/**
+ * Checks if the user is logged in and returns the user object.
+ * @returns {Object} null if the user is not logged in, otherwise the user object
+ */
+export function getUser() {
+  let user = null;
+  const token = getOnlyAccessToken(document.cookie);
+  if (token) {
+    user = jwtDecode(token);
+    document.getElementById("profile-name").textContent =
+      "Welcome " + user.username;
+    return user;
+  } else {
+    document.getElementById("profile-name").textContent = "";
+    return null;
+  }
 }
+
+getUser();
 
 const loginNav = document.getElementById("login-nav");
 const logoutNav = document.getElementById("logout-nav");
@@ -115,6 +135,11 @@ async function login(username, password) {
         alert("Please make sure you entered the right creditenials");
         profileName.textContent = "";
       } else {
+        let user = getUser();
+        setProfile(profile, user);
+        console.log("PROFILE.USER: " + profile.user);
+        console.log("PROFILE.USER.USERNAME: " + profile.user.username);
+        getUserBlogs(user.username);
         profileName.textContent = "Welcome " + username;
         loginNav.style.display = "none";
         logoutNav.style.display = "block";
@@ -151,6 +176,7 @@ function signup() {
 }
 
 function logout() {
+  document.querySelector("#blog-cards").innerHTML = "";
   fetch("http://localhost:4000/auth/logout", {
     method: "GET",
     headers: {
@@ -181,7 +207,6 @@ function checkUser() {
 }
 
 async function check() {
-  console.log("Check");
   console.log(getAccessToken(document.cookie));
   await fetch("http://localhost:4000/auth/check", {
     method: "GET",
@@ -195,15 +220,16 @@ async function check() {
     // referrerPolicy: "no-referrer",
   })
     .then((response) => {
-      console.log(response);
+      // console.log(response);
       if (response.status === 200) {
+      } else if (getRefreshToken(document.cookie)) {
+        redirectToAuthRefresh();
       }
       initUI();
       response.json();
     })
     .then((data) => {
       console.log(data);
-      console.log("Check:" + data);
     })
     .catch((error) => {
       console.log(error);
@@ -211,7 +237,6 @@ async function check() {
 }
 
 function initUI() {
-  console.log(isUserLoggedIn);
   if (isUserLoggedIn) {
     loginNav.style.display = "none";
     logoutNav.style.display = "block";
@@ -220,6 +245,24 @@ function initUI() {
     logoutNav.style.display = "none";
     profileName.textContent = "";
   }
+}
+
+function getOnlyAccessToken(documentCookie) {
+  let accessToken = documentCookie && documentCookie.split("=")[1];
+  let result = null;
+  if (accessToken != null) {
+    documentCookie.split(" ").forEach((cookie) => {
+      if (
+        cookie.startsWith("accessToken") ||
+        cookie.startsWith(" accessToken")
+      ) {
+        accessToken = cookie.split("=")[1].split(";")[0];
+        result = accessToken;
+        return accessToken;
+      }
+    });
+  }
+  return result;
 }
 
 export function getAccessToken(documentCookie) {
@@ -237,4 +280,22 @@ export function getAccessToken(documentCookie) {
     isUserLoggedIn = false;
   }
   return accessToken;
+}
+
+function getRefreshToken(documentCookie) {
+  let refreshToken = documentCookie && documentCookie.split("=")[1];
+  let isNull = true;
+  if (refreshToken != null) {
+    documentCookie.split(" ").forEach((cookie) => {
+      if (cookie.startsWith("refreshToken")) {
+        refreshToken = cookie.split("=")[1].split(";")[0];
+        isNull = false;
+        return refreshToken;
+      }
+    });
+  }
+  if (isNull) {
+    refreshToken = null;
+  }
+  return refreshToken;
 }

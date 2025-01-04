@@ -113,6 +113,23 @@ app.post(
   }
 );
 
+app.get("/api/users/:username/posts", async (req, res) => {
+  const posts = await prisma.post
+    .findMany({
+      where: {
+        author: {
+          username: req.params.username,
+        },
+      },
+    })
+    .then((posts) => {
+      res.json(posts);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+});
+
 app.get("/api/users/:userId/posts/:postId/comments", async (req, res) => {
   const { userId, postId } = req.params;
   const comment = await prisma.comment
@@ -147,53 +164,51 @@ app.get("/api/blogs", async (req, res) => {
     });
 });
 
-app.delete(
-  "/api/user/:username/posts/:postId",
-  authenticateToken,
-  async (req, res) => {
-    const { username, postId } = req.params;
-    const post = await prisma.post
-      .delete({
-        where: {
-          id: parseInt(postId),
+app.delete("/api/posts/:postId", authenticateToken, async (req, res) => {
+  const { postId } = req.params;
+  const post = await prisma.post
+    .delete({
+      where: {
+        id: parseInt(postId),
+        author: {
+          username: req.user.username,
         },
-      })
-      .then((post) => {
-        res.json(post);
-      })
-      .catch((error) => {
-        console.log(error.message);
-      });
-  }
-);
+      },
+    })
+    .then((post) => {
+      res.json(post);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+});
 
-app.put(
-  "/api/user/:username/posts/:postId",
-  authenticateToken,
-  async (req, res) => {
-    const { username, postId } = req.params;
-    const { title, text, overview } = req.body;
-    const post = await prisma.post
-      .update({
-        where: {
-          id: parseInt(postId),
+app.put("/api/posts/:postId", authenticateToken, async (req, res) => {
+  const { postId } = req.params;
+  const { title, text, overview } = req.body;
+  const post = await prisma.post
+    .update({
+      where: {
+        id: parseInt(postId),
+        author: {
+          username: req.user.username,
         },
-        data: {
-          title: title,
-          text: text,
-          overview: overview,
-        },
-      })
-      .then((post) => {
-        res.json(post);
-      })
-      .catch((error) => {
-        console.log(error.message);
-      });
-  }
-);
+      },
+      data: {
+        title: title,
+        text: text,
+        overview: overview,
+      },
+    })
+    .then((post) => {
+      res.json(post);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+});
 
-app.post("/api/user/:username/posts", authenticateToken, async (req, res) => {
+app.post("/api/users/:username/posts", authenticateToken, async (req, res) => {
   const { username } = req.params;
   const { title, text, overview } = req.body;
   const post = await prisma.post
@@ -322,13 +337,17 @@ app.post("/auth/login", async (req, res) => {
 
 app.get("/auth/refresh", (req, res) => {
   const refreshToken = req.cookies.refreshToken;
+  const domain = req.headers.referer;
+  console.log(domain);
+  console.log(refreshToken);
   if (!refreshToken) {
-    return res.redirect("http://localhost:5173/");
+    return res.redirect(domain);
   }
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err) {
+      console.log(err);
       res.cookie("refreshToken", "", { maxAge: 0 });
-      return res.redirect("http://localhost:5173/");
+      return res.redirect(domain);
     }
     const accessToken = jwt.sign(
       { username: user.username },
@@ -361,7 +380,7 @@ app.get("/auth/refresh", (req, res) => {
       // path: "/auth/refresh",
       maxAge: 60 * 60 * 60,
     });
-    res.redirect("http://localhost:5173/");
+    res.redirect(domain);
   });
 });
 
