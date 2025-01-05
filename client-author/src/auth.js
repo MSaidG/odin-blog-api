@@ -139,7 +139,7 @@ async function login(username, password) {
         setProfile(profile, user);
         console.log("PROFILE.USER: " + profile.user);
         console.log("PROFILE.USER.USERNAME: " + profile.user.username);
-        getUserBlogs(user.username);
+        getUserBlogs(profile.user.username);
         profileName.textContent = "Welcome " + username;
         loginNav.style.display = "none";
         logoutNav.style.display = "block";
@@ -266,6 +266,7 @@ function getOnlyAccessToken(documentCookie) {
 }
 
 export function getAccessToken(documentCookie) {
+  // let isUserLoggedIn = false;
   let accessToken = documentCookie && documentCookie.split("=")[1];
   if (accessToken != null) {
     documentCookie.split(" ").forEach((cookie) => {

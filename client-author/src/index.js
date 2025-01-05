@@ -49,13 +49,17 @@ let commentEditorValue = "";
 updateBlogButton.addEventListener("click", () => {
   const blogId = updateBlogButton.getAttribute("data-id");
   updateBlog(blogId);
+  const username = document.getElementById("profile-name").textContent.slice(8);
+  getUserBlogs(username);
+  viewHome();
 });
 
 deleteBlogButton.addEventListener("click", () => {
   const blogId = deleteBlogButton.getAttribute("data-id");
   deleteBlog(blogId);
   console.log(profile.user);
-  getUserBlogs(profile.user.username);
+  const username = document.getElementById("profile-name").textContent.slice(8);
+  getUserBlogs(username);
   viewHome();
 });
 
@@ -127,6 +131,9 @@ commentCloseButton.addEventListener("click", () => {
 createBlogButton.addEventListener("click", (e) => {
   const postId = e.target.getAttribute("data-id");
   createBlog();
+  const username = document.getElementById("profile-name").textContent.slice(8);
+  console.log(username);
+  getUserBlogs(username);
 });
 
 function setMessage(message) {
@@ -148,10 +155,13 @@ function deleteBlog(postId) {
     },
   })
     .then((response) => {
+      if (response.status === 401) {
+        setMessage("You must be logged in to delete a blog");
+      }
+      setMessage("BLOG DELETED!");
       return response.json();
     })
     .then((data) => {
-      setMessage(data);
       console.log(data);
     })
     .catch((error) => {
@@ -178,12 +188,12 @@ function updateBlog(postId) {
       console.log(response.status);
       if (response.status === 401) {
         setMessage("You must be logged in to update a blog");
-        return alert("You must be logged in to update a blog");
+      } else {
+        setMessage("BLOG UPDATED!");
       }
       return response.json();
     })
     .then((data) => {
-      setMessage(data);
       console.log(data);
     })
     .catch((error) => {
@@ -198,7 +208,7 @@ function createBlog() {
     / contenteditable="true" style="position: relative;" spellcheck="false"/g,
     ""
   );
-  fetch(`http://localhost:4000/api/user/${username}/posts`, {
+  fetch(`http://localhost:4000/api/posts`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -213,10 +223,14 @@ function createBlog() {
     }),
   })
     .then((response) => {
+      if (response.status === 401) {
+        setMessage("You must be logged in to create a blog");
+      } else {
+        setMessage("BLOG CREATED!");
+      }
       return response.json();
     })
     .then((data) => {
-      setMessage(data);
       console.log(data);
     })
     .catch((error) => {
@@ -266,9 +280,10 @@ function getBlog(blogId) {
 }
 
 function parseBlog(blog) {
-  blogOverview.textContent = blog.overview;
   blogTitle.textContent = blog.title;
-  blogBody.textContent = blog.text;
+  blogAuthor.textContent = "by   " + blog.author.username;
+  // blogBody.textContent = blog.text;
+  blogBody.innerHTML = blog.text;
   const time = new Date(blog.time).toUTCString();
   blogDate.setAttribute("datetime", time);
   blogDate.textContent = time;

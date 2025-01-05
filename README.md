@@ -2,6 +2,19 @@
 
 ## TO-DO's
 
+[X] Authentication
+[X] Authorization
+[X] CRUD for blogs
+[ ] Published and unpublished blogs
+[ ] CRUD for comments
+
+### BONUS
+
+[ ] Pagination
+[ ] Filter
+[ ] Sort
+[ ] Search
+
 - Blog should have posts and comments
 - Leave username of author and timestamp for comments
 - Post(id, title, text, comments, isPublished, author, timestamp)

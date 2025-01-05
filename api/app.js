@@ -113,10 +113,28 @@ app.post(
   }
 );
 
+app.get("/api/self/posts", authenticateToken, async (req, res) => {
+  const posts = await prisma.post
+    .findMany({
+      where: {
+        author: {
+          username: req.user.username,
+        },
+      },
+    })
+    .then((posts) => {
+      res.json(posts);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+});
+
 app.get("/api/users/:username/posts", async (req, res) => {
   const posts = await prisma.post
     .findMany({
       where: {
+        // published: true,
         author: {
           username: req.params.username,
         },
@@ -208,8 +226,7 @@ app.put("/api/posts/:postId", authenticateToken, async (req, res) => {
     });
 });
 
-app.post("/api/users/:username/posts", authenticateToken, async (req, res) => {
-  const { username } = req.params;
+app.post("/api/posts", authenticateToken, async (req, res) => {
   const { title, text, overview } = req.body;
   const post = await prisma.post
     .create({
@@ -219,7 +236,7 @@ app.post("/api/users/:username/posts", authenticateToken, async (req, res) => {
         overview: overview,
         author: {
           connect: {
-            username: username,
+            username: req.user.username,
           },
         },
       },
