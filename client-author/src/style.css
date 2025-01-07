@@ -516,7 +516,7 @@ footer {
   width: fit-content;
 }
 
-#comment-popup {
+#comment-popup, #edit-comment-popup {
   position: fixed;
   direction: column;
   width: 30vw;
@@ -533,7 +533,7 @@ footer {
   z-index: 1;
 }
 
-#comment-popup > #comment-close {
+#comment-popup > #comment-close, #edit-comment-popup > #edit-comment-close {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
@@ -550,7 +550,7 @@ footer {
   transform: translateY(-30%);
 }
 
-#comment-popup > section {
+#comment-popup > section, #edit-comment-popup > section {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -558,7 +558,7 @@ footer {
 
 }
 
-#comment-popup > section > textarea {
+#comment-popup > section > textarea, #edit-comment-popup > section > textarea {
   resize: none;
   overflow: auto;
   border-radius: 8px;
@@ -570,7 +570,7 @@ footer {
   color: #213547;
 }
 
-#comment-popup > section > input {
+#comment-popup > section > input, #edit-comment-popup > section > input {
   resize: none;
   overflow: auto;
   width: 100%;

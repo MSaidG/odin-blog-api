@@ -7,18 +7,22 @@ export function setProfile(profile, value) {
 
 console.log("PROFILE: " + profile.user);
 
+const deleteCommentButtons = document.querySelectorAll(".delete-comment");
 const replyButtons = document.querySelectorAll(".reply-button");
 const homePage = document.querySelector("#home");
 const blogPage = document.querySelector("#blog");
 const cover = document.querySelector("#transparent-cover");
 const addCommentButton = document.querySelector("#add-comment");
 const commentPopup = document.querySelector("#comment-popup");
+const editCommentPopup = document.querySelector("#edit-comment-popup");
 const submitCommentButton = document.querySelector("#comment-submit");
+const submitEditCommentButton = document.querySelector("#edit-comment-submit");
 const commentCloseButton = document.querySelector("#comment-close");
+const editCommentCloseButton = document.querySelector("#edit-comment-close");
 const commentList = document.querySelector(".comments-list");
 const commentEditor = document.querySelector("#comment-editor");
+const editCommentEditor = document.querySelector("#edit-comment-editor");
 
-const blogContent = document.querySelector(".blog-content");
 const blogTitle = document.querySelector(".blog-title");
 const blogOverview = document.querySelector(".blog-overview");
 
@@ -45,6 +49,8 @@ deleteBlogButton.style.display = "none";
 publishBlogButton.style.display = "none";
 unpublishBlogButton.style.display = "none";
 let commentEditorValue = "";
+let editCommentTextDom = null;
+let editCommentTimestampDom = null;
 
 updateBlogButton.addEventListener("click", () => {
   const blogId = updateBlogButton.getAttribute("data-id");
@@ -114,19 +120,44 @@ replyButtons.forEach((replyButton) => {
   });
 });
 
+// submitCommentButton.addEventListener("click", submitComment);
 submitCommentButton.addEventListener("click", () => {
   cover.style.display = "none";
   commentPopup.style.visibility = "hidden";
   const postId = addCommentButton.getAttribute("data-id");
   const userId = "f8c4b310-ea72-4df5-9c7a-348b361071fa"; // USER ID HARD CODED FOR NOW TO TEST
+  console.log("submit comment clicked!");
   postComment(postId, userId);
-  // getComment(postId, userId);
 });
 
-commentCloseButton.addEventListener("click", () => {
+submitEditCommentButton.addEventListener("click", async () => {
+  cover.style.display = "none";
+  editCommentPopup.style.visibility = "hidden";
+  const postId = submitEditCommentButton.getAttribute("data-id");
+  // const userId = "f8c4b310-ea72-4df5-9c7a-348b361071fa"; // USER ID HARD CODED FOR NOW TO TEST
+  console.log("submit edit comment clicked!");
+  const text = editCommentEditor.value;
+  const result = await editComment(postId, text);
+  editCommentTextDom.textContent = result.text;
+  const time = new Date(result.time).toUTCString();
+  console.log(time);
+  editCommentTimestampDom.setAttribute("datetime", time);
+  editCommentTimestampDom.textContent = time;
+});
+
+commentCloseButton.addEventListener("click", (e) => {
   cover.style.display = "none";
   commentPopup.style.visibility = "hidden";
 });
+
+editCommentCloseButton.addEventListener("click", (e) => {
+  cover.style.display = "none";
+  editCommentPopup.style.visibility = "hidden";
+});
+
+// window.addEventListener("click", (e) => {
+//   console.log(e.target);
+// });
 
 createBlogButton.addEventListener("click", (e) => {
   const postId = e.target.getAttribute("data-id");
@@ -157,8 +188,9 @@ function deleteBlog(postId) {
     .then((response) => {
       if (response.status === 401) {
         setMessage("You must be logged in to delete a blog");
+      } else {
+        setMessage("BLOG DELETED!");
       }
-      setMessage("BLOG DELETED!");
       return response.json();
     })
     .then((data) => {
@@ -170,6 +202,7 @@ function deleteBlog(postId) {
 }
 
 function updateBlog(postId) {
+  console.log("UPDATE BLOG");
   fetch(`http://localhost:4000/api/posts/${postId}`, {
     method: "PUT",
     headers: {
@@ -188,6 +221,7 @@ function updateBlog(postId) {
       console.log(response.status);
       if (response.status === 401) {
         setMessage("You must be logged in to update a blog");
+        window.location.reload();
       } else {
         setMessage("BLOG UPDATED!");
       }
@@ -255,11 +289,13 @@ export function getUserBlogs(username) {
       console.log(error);
     });
 }
+////////////////////////////////////////////////////////////////
 
 console.log("USER: " + profile.user);
 if (profile.user) {
   getUserBlogs(profile.user.username);
 }
+////////////////////////////////////////////////////////////////
 
 function getBlog(blogId) {
   fetch(`http://localhost:4000/api/posts/${blogId}`, {
@@ -318,19 +354,24 @@ function parseComments(data) {
 
 function addComment(comment, isInserted = false) {
   const listItem = document.createElement("li");
+
   const commentCard = document.createElement("div");
   commentCard.classList.add("comment");
+
   const commentAuthor = document.createElement("h3");
   commentAuthor.textContent = comment.user.username;
   commentCard.appendChild(commentAuthor);
+
   const commentContent = document.createElement("p");
   commentContent.textContent = comment.text;
   commentCard.appendChild(commentContent);
+
   const commentTimestamp = document.createElement("time");
   const time = new Date(comment.time).toUTCString();
   commentTimestamp.setAttribute("datetime", time);
   commentTimestamp.textContent = time;
   commentCard.appendChild(commentTimestamp);
+
   const commentReplyButton = document.createElement("button");
   commentReplyButton.classList.add("reply-button");
   commentReplyButton.textContent = "Reply";
@@ -339,6 +380,34 @@ function addComment(comment, isInserted = false) {
     commentPopup.style.visibility = "visible";
   });
   commentCard.appendChild(commentReplyButton);
+
+  const commentDeleteButton = document.createElement("button");
+  commentDeleteButton.classList.add("delete-button");
+  commentDeleteButton.textContent = "Delete";
+  commentDeleteButton.addEventListener("click", () => {
+    console.log("DELETE COMMENT");
+    deleteComment(comment.id);
+    commentList.removeChild(listItem);
+  });
+  commentCard.appendChild(commentDeleteButton);
+
+  if (comment.user.username === profile.user.username) {
+    const commentEditButton = document.createElement("button");
+    commentEditButton.classList.add("edit-button");
+    commentEditButton.textContent = "Edit";
+    commentEditButton.addEventListener("click", () => {
+      // console.log("EDIT COMMENT");
+      // editComment(comment.id);
+      editCommentEditor.value = comment.text;
+      submitEditCommentButton.setAttribute("data-id", comment.id);
+      cover.style.display = "block";
+      editCommentPopup.style.visibility = "visible";
+      editCommentTextDom = commentCard.querySelector("p");
+      editCommentTimestampDom = commentCard.querySelector("time");
+    });
+    commentCard.appendChild(commentEditButton);
+  }
+
   listItem.appendChild(commentCard);
   if (!isInserted) {
     commentList.appendChild(listItem);
@@ -395,6 +464,7 @@ function addEditButtonsEventListener() {
       unpublishBlogButton.style.display = "block";
       unpublishBlogButton.setAttribute("data-id", blogId);
       newBlog.style.display = "none";
+      addCommentButton.setAttribute("data-id", blogId);
       getBlog(blogId);
       getComments(blogId);
       blogCard.classList.toggle("expanded");
@@ -404,7 +474,66 @@ function addEditButtonsEventListener() {
   });
 }
 
+async function editComment(commentId, text) {
+  let resultData = null;
+  await fetch(`http://localhost:4000/api/comments/${commentId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      // credintials: "include",
+      Authorization: `accessToken ${getAccessToken(document.cookie)}`,
+      cookie: document.cookie,
+    },
+    body: JSON.stringify({ text: text }),
+  })
+    .then((response) => {
+      if (response.status === 401) {
+        redirectToAuthRefresh();
+        return alert("You must be logged in to edit a comment");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data);
+      resultData = data;
+      commentEditor.value = data.text;
+      commentEditor.setAttribute("data-id", commentId);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
+  return resultData;
+}
+
+async function deleteComment(commentId) {
+  await fetch(`http://localhost:4000/api/comments/${commentId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      // credintials: "include",
+      Authorization: `accessToken ${getAccessToken(document.cookie)}`,
+      cookie: document.cookie,
+    },
+  })
+    .then((response) => {
+      if (response.status === 401) {
+        redirectToAuthRefresh();
+        return alert("You must be logged in to delete a comment");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data);
+    })
+    .catch((error) => {
+      console.log(error);
+      return error;
+    });
+}
+
 async function postComment(postId, userId) {
+  console.log("POST COMMENT? ");
   commentEditorValue = commentEditor.value;
   await fetch(
     `http://localhost:4000/api/users/${userId}/posts/${postId}/comments`,
@@ -443,6 +572,7 @@ export function redirectToAuthRefresh() {
 }
 
 function getComment(postId, userId) {
+  console.log("GET COMMENT? ");
   fetch(`http://localhost:4000/api/users/${userId}/posts/${postId}/comments`, {
     method: "GET",
     headers: {

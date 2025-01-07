@@ -194,18 +194,6 @@ function logout() {
     });
 }
 
-function checkUser() {
-  fetch(window.location.href, {
-    method: "GET",
-  })
-    .then((response) => {
-      console.log(response);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-}
-
 async function check() {
   console.log(getAccessToken(document.cookie));
   await fetch("http://localhost:4000/auth/check", {

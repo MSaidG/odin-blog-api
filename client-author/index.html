@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script type="module" src="src/tinymce.js"></script>
-    <script type="module" src="src/index.js" defer></script>
+    <script type="module" src="src/tinymce.js" defer></script>
+    <!-- <script type="module" src="src/index.js" defer></script> -->
+    <script type="module" src="src/auth.js" defer></script>
     <link rel="stylesheet" href="src/style.css">
     <script src="https://cdn.tiny.cloud/1/cza1ryueagagqx7uu3oh4r6ijkyut513wd0e7np3gjgovea4/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <title>Vite App</title>
@@ -110,21 +111,29 @@
 
         </ul>
       </section>
-
-
             
       <div id="comment-popup">
         <button id="comment-close">X</button>
         <section>
-          <label for="name">Name</label>
-          <input type="text" id="name">
-        </section>
-        <section>
-          <label for="comment-editor">Comment</label>
+          <label>Comment</label>
           <textarea id="comment-editor"></textarea>
         </section>
-        <button id="comment-submit">Submit</button>
+        <section>
+          <button id="comment-submit">Submit</button>
+        </section>
       </div>
+
+      <div id="edit-comment-popup">
+        <button id="edit-comment-close">X</button>
+        <section>
+          <label>Comment</label>
+          <textarea id="edit-comment-editor"></textarea>
+        </section>
+        <section>
+          <button id="edit-comment-submit">Submit</button>
+        </section>
+      </div>
+
       <aside></aside>
     </div>
 

@@ -37,6 +37,62 @@ app.use(
   })
 );
 
+app.put("/api/comments/:commentId", authenticateToken, async (req, res) => {
+  console.log(req.params.commentId);
+  console.log(req.user.username);
+  const comment = await prisma.comment
+    .update({
+      where: {
+        id: parseInt(req.params.commentId),
+        user: {
+          username: req.user.username,
+        },
+      },
+      data: {
+        text: req.body.text,
+      },
+    })
+    .then((comment) => {
+      res.json(comment);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+});
+
+app.delete("/api/comments/:commentId", authenticateToken, async (req, res) => {
+  console.log(req.params.commentId);
+  console.log(req.user.username);
+  const comment = await prisma.comment
+    .delete({
+      where: {
+        id: parseInt(req.params.commentId),
+        user: {
+          OR: [
+            {
+              username: req.user.username,
+            },
+            {
+              Post: {
+                every: {
+                  author: {
+                    username: req.user.username,
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    })
+    .then((comment) => {
+      res.json(comment);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+});
+
 app.get("/api/posts/:postId/comments", async (req, res) => {
   const comments = await prisma.comment
     .findMany({
